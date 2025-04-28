@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ماہانہ آمدن و خرچ</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+        .then(function() { console.log('Service Worker Registered'); });
+      }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Nastaliq Urdu', cursive;
+            background: #f0f0f0;
+            padding: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            max-width: 900px;
+            margin: auto;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #0d47a1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #0d47a1;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background: #0d47a1;
+            color: #fff;
+        }
+        .buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .buttons button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #0d47a1;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .buttons button:hover {
+            background: #08306b;
+        }
+        .summary {
+            margin-top: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="invoice">
+    <h1>ماہانہ آمدن و خرچ</h1>
+    <h2 id="monthYear"></h2>
+
+    <table id="records">
+        <thead>
+            <tr>
+                <th>تاریخ</th>
+                <th>تفصیل</th>
+                <th>آمدن (Rs.)</th>
+                <th>خرچ (Rs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <p><strong>کل آمدن:</strong> Rs. <span id="totalIncome">0</span></p>
+        <p><strong>کل خرچ:</strong> Rs. <span id="totalExpense">0</span></p>
+        <p><strong>بقیہ رقم:</strong> Rs. <span id="balance">0</span></p>
+    </div>
+
+    <div class="buttons">
+        <button onclick="addRecord()">نیا اندراج</button>
+        <button onclick="downloadPDF()">ڈاؤن لوڈ پی ڈی ایف</button>
+    </div>
+</div>
+
+<script>
+const monthNames = ['جنوری', 'فروری', 'مارچ', 'اپریل', 'مئی', 'جون', 'جولائی', 'اگست', 'ستمبر', 'اکتوبر', 'نومبر', 'دسمبر'];
+const now = new Date();
+const month = monthNames[now.getMonth()];
+const year = now.getFullYear();
+document.getElementById('monthYear').innerText = month + ' ' + year;
+
+function addRecord() {
+    let date = prompt('تاریخ درج کریں (مثلاً 05-04-2025):');
+    let description = prompt('تفصیل درج کریں:');
+    let income = parseFloat(prompt('آمدن کی رقم درج کریں (اگر نہیں تو 0 لکھیں):')) || 0;
+    let expense = parseFloat(prompt('خرچ کی رقم درج کریں (اگر نہیں تو 0 لکھیں):')) || 0;
+
+    const tbody = document.getElementById('records').querySelector('tbody');
+    const row = tbody.insertRow();
+
+    row.insertCell(0).innerText = date;
+    row.insertCell(1).innerText = description;
+    row.insertCell(2).innerText = income.toFixed(2);
+    row.insertCell(3).innerText = expense.toFixed(2);
+
+    updateSummary();
+}
+
+function updateSummary() {
+    const tbody = document.getElementById('records').querySelector('tbody');
+    let totalIncome = 0, totalExpense = 0;
+
+    for (let row of tbody.rows) {
+        totalIncome += parseFloat(row.cells[2].innerText);
+        totalExpense += parseFloat(row.cells[3].innerText);
+    }
+
+    document.getElementById('totalIncome').innerText = totalIncome.toFixed(2);
+    document.getElementById('totalExpense').innerText = totalExpense.toFixed(2);
+    document.getElementById('balance').innerText = (totalIncome - totalExpense).toFixed(2);
+}
+
+function downloadPDF() {
+    const element = document.getElementById('invoice');
+    html2pdf().from(element).save('Monthly_Report.pdf');
+}
+</script>
+
+</body>
+</html>
